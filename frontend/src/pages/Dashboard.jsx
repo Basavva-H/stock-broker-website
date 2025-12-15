@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
 import io from "socket.io-client"
+import API_URL from "../config"
 import Navbar from "../components/Navbar"
 import StockCard from "../components/StockCard"
 import StockGraph from "../components/StockGraph"
@@ -23,7 +24,6 @@ const Dashboard = ({ onLogout }) => {
   const navigate = useNavigate()
 
   const token = sessionStorage.getItem("token")
-  const API_URL = "http://localhost:5000"
 
   useEffect(() => {
     if (subscribed.length > 0 && Object.keys(prices).length > 0) {
@@ -84,23 +84,23 @@ const Dashboard = ({ onLogout }) => {
     setSocket(newSocket)
 
     newSocket.on("connect", () => {
-      console.log("Socket connected:", newSocket.id)
+      console.log("[v0] Socket connected:", newSocket.id)
       setConnectionStatus("Connected")
       newSocket.emit("authenticate", token)
     })
 
     newSocket.on("authenticated", (data) => {
-      console.log("Socket authenticated successfully:", data)
+      console.log("[v0] Socket authenticated successfully:", data)
       setConnectionStatus("Connected")
     })
 
     newSocket.on("auth-error", (data) => {
-      console.error("Socket authentication error:", data)
+      console.error("[v0] Socket authentication error:", data)
       setConnectionStatus("Authentication failed")
     })
 
     newSocket.on("price-update", (data) => {
-      console.log("Price update received at", new Date(data.timestamp).toLocaleTimeString())
+      console.log("[v0] Price update received at", new Date(data.timestamp).toLocaleTimeString())
       setPrices(data.prices)
 
       setPriceHistory((prev) => {
@@ -122,17 +122,17 @@ const Dashboard = ({ onLogout }) => {
     })
 
     newSocket.on("disconnect", () => {
-      console.log("Socket disconnected")
+      console.log("[v0] Socket disconnected")
       setConnectionStatus("Disconnected")
     })
 
     newSocket.on("connect_error", (error) => {
-      console.error(" Socket connection error:", error)
+      console.error("[v0] Socket connection error:", error)
       setConnectionStatus("Connection error")
     })
 
     return () => {
-      console.log(" Cleaning up socket connection")
+      console.log("[v0] Cleaning up socket connection")
       newSocket.disconnect()
     }
   }, [token])
@@ -199,12 +199,12 @@ const Dashboard = ({ onLogout }) => {
         <div className="dashboard-header">
           <h1 className="dashboard-title">Your Stock Portfolio</h1>
           <p className="dashboard-subtitle">Subscribe to stocks and track real-time prices</p>
-          
+          <p className="connection-status">Status: {connectionStatus}</p>
           {subscribed.length > 0 && (
             <div className="portfolio-value-container">
               <div className="portfolio-value-box">
                 <span className="portfolio-label">Total Portfolio Value</span>
-                <span className="portfolio-amount">₹{portfolioValue.toFixed(2)}</span>
+                <span className="portfolio-amount">${portfolioValue.toFixed(2)}</span>
               </div>
             </div>
           )}
@@ -221,7 +221,7 @@ const Dashboard = ({ onLogout }) => {
                       <div className="mini-card-content">
                         <div className="mini-card-header" onClick={() => setSelectedStock(stock)}>
                           <span className="mini-stock-symbol">{stock}</span>
-                          <span className="mini-stock-price">₹{prices[stock]?.toFixed(2) || "0.00"}</span>
+                          <span className="mini-stock-price">${prices[stock]?.toFixed(2) || "0.00"}</span>
                         </div>
                         <button
                           className="mini-unsubscribe-btn"
