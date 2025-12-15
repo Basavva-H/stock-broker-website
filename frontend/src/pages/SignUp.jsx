@@ -3,10 +3,11 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import axios from "axios"
-import API_URL from "../config"
+import config from "../config"
 import Navbar from "../components/Navbar"
 import FormInput from "../components/FormInput"
 import "./Auth.css"
+const { API_URL, WS_URL } = config;
 
 const SignUp = ({ onLogin }) => {
   const [formData, setFormData] = useState({
