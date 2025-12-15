@@ -1,0 +1,258 @@
+.stock-graph-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+  width: 100%;
+}
+
+.graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.graph-info {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.graph-stock {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.graph-price {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: "Courier New", monospace;
+}
+
+.graph-price.up {
+  color: #10b981;
+}
+
+.graph-price.down {
+  color: #ef4444;
+}
+
+.graph-change {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.graph-change.positive {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.graph-change.negative {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Added timeline selector styling */
+.timeline-selector {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-start;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.05) 0%, rgba(0, 217, 255, 0.02) 100%);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.timeline-btn {
+  padding: 0.6rem 1.2rem;
+  border: 1.5px solid var(--border);
+  background-color: var(--primary);
+  color: var(--text-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.timeline-btn:hover {
+  border-color: var(--accent);
+  background-color: rgba(0, 217, 255, 0.1);
+  color: var(--accent);
+}
+
+.timeline-btn.active {
+  background-color: var(--accent);
+  color: var(--primary);
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+}
+
+/* Improved bar chart canvas with proper aspect ratio */
+.graph-canvas-bars {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.03) 0%, rgba(0, 217, 255, 0.01) 100%);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 1rem;
+  flex: 1;
+}
+
+.bars-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 250px;
+  gap: 0.3rem;
+  flex: 1;
+}
+
+.bar-wrapper {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+  flex: 1;
+  max-width: 18px;
+  min-width: 4px;
+}
+
+.bar {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 217, 255, 0.1);
+}
+
+.bar.up {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+}
+
+.bar.down {
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+}
+
+.bar:hover {
+  opacity: 0.8;
+  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+  transform: scaleY(1.05);
+}
+
+.bars-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding: 0 0.5rem;
+}
+
+.bar-label-min,
+.bar-label-max {
+  font-family: "Courier New", monospace;
+  font-weight: 600;
+}
+
+.graph-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.05) 0%, rgba(0, 217, 255, 0.02) 100%);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 217, 255, 0.1);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  color: var(--accent);
+  font-weight: 700;
+  font-family: "Courier New", monospace;
+}
+
+.graph-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 320px;
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .graph-canvas-bars {
+    height: 280px;
+  }
+
+  .bars-container {
+    height: 220px;
+  }
+}
+
+@media (max-width: 768px) {
+  .graph-canvas-bars {
+    height: 250px;
+  }
+
+  .bars-container {
+    height: 200px;
+  }
+
+  .graph-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .graph-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bar-wrapper {
+    max-width: 14px;
+  }
+
+  .timeline-selector {
+    gap: 0.5rem;
+  }
+
+  .timeline-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+}
