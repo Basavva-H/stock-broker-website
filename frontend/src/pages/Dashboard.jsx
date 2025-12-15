@@ -149,11 +149,20 @@ const Dashboard = ({ onLogout }) => {
 
   const handleSubscribe = async (stockSymbol) => {
     try {
+      console.log("TOKEN USED FOR SUBSCRIBE:", token);
+
       await axios.post(
-        `${API_URL}/api/stocks/subscribe`,
-        { stockSymbol },
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
+  `${API_URL}/api/stocks/subscribe`,
+  { stockSymbol },
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    withCredentials: true,
+  }
+)
+
       setSubscribed([...subscribed, stockSymbol])
       setSelectedStock(stockSymbol)
       socket?.emit("subscribe-stock", stockSymbol)
