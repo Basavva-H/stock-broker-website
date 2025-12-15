@@ -13,7 +13,10 @@ const app = express()
 const server = http.createServer(app)
 const io = socketIO(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: [
+    "http://localhost:3000",
+    "https://stock-broker-dashboard-3hom.onrender.com"
+  ],
     methods: ["GET", "POST"],
     credentials: true,
   },
