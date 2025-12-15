@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import axios from "axios"
-import API_URL from "../config"
+import config from "../config";
+const { API_URL } = config;
 import Navbar from "../components/Navbar"
 import FormInput from "../components/FormInput"
 import "./Auth.css"
