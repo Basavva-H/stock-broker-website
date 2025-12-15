@@ -47,31 +47,43 @@ const SignIn = ({ onLogin }) => {
     }
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!validateForm()) return
+  if (!validateForm()) return;
 
-    setLoading(true)
-    try {
-      const response = await axios.post(`${API_URL}/api/auth/signin`, {
+  setLoading(true);
+  try {
+    const response = await axios.post(
+      `${API_URL}/api/auth/signin`,
+      {
         email: formData.email,
         password: formData.password,
-      })
-      console.log("FULL LOGIN RESPONSE:", response);
-console.log("LOGIN RESPONSE DATA:", response.data);
+      },
+      { withCredentials: true }
+    );
 
-      sessionStorage.setItem("token", response.data.token)
-      sessionStorage.setItem("user", JSON.stringify(response.data.user))
-      console.log("LOGIN TOKEN SAVED:", response.data.token) 
-      onLogin(response.data.token)
-      navigate("/dashboard")
-    } catch (error) {
-      setErrors({ general: error.response?.data?.error || "Sign in failed" })
-    } finally {
-      setLoading(false)
+    console.log("LOGIN RESPONSE DATA:", response.data);
+
+    if (!response.data?.token) {
+      throw new Error("Token not received from server");
     }
+
+    sessionStorage.setItem("token", response.data.token);
+    sessionStorage.setItem("user", JSON.stringify(response.data.user));
+
+    console.log("LOGIN TOKEN SAVED:", response.data.token);
+
+    onLogin(response.data.token);
+    navigate("/dashboard");
+  } catch (error) {
+    console.error("Login error:", error);
+    setErrors({ general: "Sign in failed" });
+  } finally {
+    setLoading(false);
   }
+};
+
 
   return (
     <div className="auth-page">
