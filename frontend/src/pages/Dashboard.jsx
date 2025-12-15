@@ -96,7 +96,11 @@ const Dashboard = ({ onLogout }) => {
     newSocket.on("connect", () => {
       console.log("Socket connected:", newSocket.id)
       setConnectionStatus("Connected")
-      newSocket.emit("authenticate", token)
+if (token && token !== "undefined") {
+  newSocket.emit("authenticate", token)
+} else {
+  console.warn("No token found, skipping socket authentication")
+}
     })
 
     newSocket.on("authenticated", (data) => {
