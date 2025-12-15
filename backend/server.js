@@ -64,6 +64,16 @@ const verifyToken = (token) => {
 }
 
 // Routes
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    message: "Server is running",
+    timestamp: new Date().toISOString(),
+    mongodb: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    supportedStocks: SUPPORTED_STOCKS,
+  })
+})
+
 
 // Sign Up
 app.post("/api/auth/signup", async (req, res) => {
