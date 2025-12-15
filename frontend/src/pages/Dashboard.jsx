@@ -227,7 +227,7 @@ if (token && token !== "undefined") {
             <div className="portfolio-value-container">
               <div className="portfolio-value-box">
                 <span className="portfolio-label">Total Portfolio Value</span>
-                <span className="portfolio-amount">${portfolioValue.toFixed(2)}</span>
+                <span className="portfolio-amount">₹{portfolioValue.toFixed(2)}</span>
               </div>
             </div>
           )}
@@ -244,7 +244,7 @@ if (token && token !== "undefined") {
                       <div className="mini-card-content">
                         <div className="mini-card-header" onClick={() => setSelectedStock(stock)}>
                           <span className="mini-stock-symbol">{stock}</span>
-                          <span className="mini-stock-price">${prices[stock]?.toFixed(2) || "0.00"}</span>
+                          <span className="mini-stock-price">₹{prices[stock]?.toFixed(2) || "0.00"}</span>
                         </div>
                         <button
                           className="mini-unsubscribe-btn"
