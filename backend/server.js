@@ -11,16 +11,18 @@ dotenv.config()
 
 const app = express()
 const server = http.createServer(app)
-const io = socketIO(server, {
+const io = new Server(server, {
+  path: "/socket.io",
   cors: {
     origin: [
-    "http://localhost:3000",
-    "https://stock-broker-dashboard-3hom.onrender.com"
-  ],
+      "http://localhost:3000",
+      "https://stock-broker-dashboard-3hom.onrender.com"
+    ],
     methods: ["GET", "POST"],
     credentials: true,
   },
-})
+});
+
 
 // Middleware
 app.use(cors())
