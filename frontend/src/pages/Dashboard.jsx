@@ -11,6 +11,9 @@ import StockGraph from "../components/StockGraph"
 import "./Dashboard.css"
 
 const { API_URL, WS_URL } = config;
+console.log("API_URL =", API_URL, typeof API_URL);
+console.log("WS_URL =", WS_URL, typeof WS_URL);
+
 const Dashboard = ({ onLogout }) => {
   const [user, setUser] = useState(null)
   const [stocks, setStocks] = useState([])
