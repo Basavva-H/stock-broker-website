@@ -9,7 +9,7 @@ import Navbar from "../components/Navbar"
 import FormInput from "../components/FormInput"
 import "./Auth.css"
 
-const { API_URL } = config;
+const { API_URL, WS_URL } = config;
 const SignIn = ({ onLogin }) => {
   const [formData, setFormData] = useState({
     email: "",
