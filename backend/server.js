@@ -25,7 +25,14 @@ const io = new Server(server, {
 
 
 // Middleware
-app.use(cors())
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://stock-broker-dashboard-3hom.onrender.com"
+  ],
+  credentials: true,
+}))
+
 app.use(express.json())
 
 // MongoDB Connection
