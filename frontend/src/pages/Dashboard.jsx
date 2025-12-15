@@ -83,33 +83,34 @@ const Dashboard = ({ onLogout }) => {
 
     fetchInitialData()
 
-    const newSocket = io(API_URL, {
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      reconnectionAttempts: 5,
-    })
+   const newSocket = io(WS_URL, {
+  path: "/socket.io",
+  transports: ["websocket"], // 🚫 disables polling
+  withCredentials: true,
+  timeout: 20000,
+})
+
 
     setSocket(newSocket)
 
     newSocket.on("connect", () => {
-      console.log("[v0] Socket connected:", newSocket.id)
+      console.log("Socket connected:", newSocket.id)
       setConnectionStatus("Connected")
       newSocket.emit("authenticate", token)
     })
 
     newSocket.on("authenticated", (data) => {
-      console.log("[v0] Socket authenticated successfully:", data)
+      console.log("Socket authenticated successfully:", data)
       setConnectionStatus("Connected")
     })
 
     newSocket.on("auth-error", (data) => {
-      console.error("[v0] Socket authentication error:", data)
+      console.error("Socket authentication error:", data)
       setConnectionStatus("Authentication failed")
     })
 
     newSocket.on("price-update", (data) => {
-      console.log("[v0] Price update received at", new Date(data.timestamp).toLocaleTimeString())
+      console.log("Price update received at", new Date(data.timestamp).toLocaleTimeString())
       setPrices(data.prices)
 
       setPriceHistory((prev) => {
@@ -131,17 +132,17 @@ const Dashboard = ({ onLogout }) => {
     })
 
     newSocket.on("disconnect", () => {
-      console.log("[v0] Socket disconnected")
+      console.log("Socket disconnected")
       setConnectionStatus("Disconnected")
     })
 
     newSocket.on("connect_error", (error) => {
-      console.error("[v0] Socket connection error:", error)
+      console.error("Socket connection error:", error)
       setConnectionStatus("Connection error")
     })
 
     return () => {
-      console.log("[v0] Cleaning up socket connection")
+      console.log("Cleaning up socket connection")
       newSocket.disconnect()
     }
   }, [token])
