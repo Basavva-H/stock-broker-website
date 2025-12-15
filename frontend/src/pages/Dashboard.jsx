@@ -38,8 +38,13 @@ const Dashboard = ({ onLogout }) => {
 
   useEffect(() => {
     const userData = sessionStorage.getItem("user")
-    if (userData) {
-      setUser(JSON.parse(userData))
+    if (userData && userData !== "undefined") {
+      try {
+        setUser(JSON.parse(userData))
+      } catch (error) {
+        console.error("[v0] Error parsing user data:", error)
+        sessionStorage.removeItem("user")
+      }
     }
 
     const fetchInitialData = async () => {
@@ -204,7 +209,7 @@ const Dashboard = ({ onLogout }) => {
             <div className="portfolio-value-container">
               <div className="portfolio-value-box">
                 <span className="portfolio-label">Total Portfolio Value</span>
-                <span className="portfolio-amount">₹{portfolioValue.toFixed(2)}</span>
+                <span className="portfolio-amount">${portfolioValue.toFixed(2)}</span>
               </div>
             </div>
           )}
@@ -221,7 +226,7 @@ const Dashboard = ({ onLogout }) => {
                       <div className="mini-card-content">
                         <div className="mini-card-header" onClick={() => setSelectedStock(stock)}>
                           <span className="mini-stock-symbol">{stock}</span>
-                          <span className="mini-stock-price">₹{prices[stock]?.toFixed(2) || "0.00"}</span>
+                          <span className="mini-stock-price">${prices[stock]?.toFixed(2) || "0.00"}</span>
                         </div>
                         <button
                           className="mini-unsubscribe-btn"
