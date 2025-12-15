@@ -4,12 +4,13 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
 import io from "socket.io-client"
-import API_URL from "../config"
+import config from "../config"
 import Navbar from "../components/Navbar"
 import StockCard from "../components/StockCard"
 import StockGraph from "../components/StockGraph"
 import "./Dashboard.css"
 
+const { API_URL, WS_URL } = config;
 const Dashboard = ({ onLogout }) => {
   const [user, setUser] = useState(null)
   const [stocks, setStocks] = useState([])
