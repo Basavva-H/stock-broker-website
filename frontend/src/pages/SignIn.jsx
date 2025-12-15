@@ -60,6 +60,7 @@ const SignIn = ({ onLogin }) => {
 
       sessionStorage.setItem("token", response.data.token)
       sessionStorage.setItem("user", JSON.stringify(response.data.user))
+      console.log("LOGIN TOKEN SAVED:", response.data.token) 
       onLogin(response.data.token)
       navigate("/dashboard")
     } catch (error) {
