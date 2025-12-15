@@ -57,6 +57,8 @@ const SignIn = ({ onLogin }) => {
         email: formData.email,
         password: formData.password,
       })
+      console.log("FULL LOGIN RESPONSE:", response);
+console.log("LOGIN RESPONSE DATA:", response.data);
 
       sessionStorage.setItem("token", response.data.token)
       sessionStorage.setItem("user", JSON.stringify(response.data.user))
