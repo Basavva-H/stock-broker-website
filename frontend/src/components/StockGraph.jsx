@@ -14,10 +14,9 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
   // Generate display data based on timeline and incoming price history
   useEffect(() => {
     if (priceHistory && priceHistory.length > 0) {
-      // Use actual price history from DB
       const formatted = priceHistory.map((p) => ({
         price: p.price,
-        time: new Date(p.timestamp).toLocaleTimeString("en-US", {
+        time: new Date(p.timestamp).toLocaleTimeString("en-IN", {
           hour: "2-digit",
           minute: "2-digit",
         }),
@@ -25,24 +24,22 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
       }))
       setDisplayData(formatted)
     } else if (data && data.length > 0) {
-      // Use passed data
       setDisplayData(data)
     } else {
-      // Generate synthetic data
-      const basePrice = currentPrice || 100
-      const volatility = basePrice * 0.05
+      // Generate synthetic data with INR price range
+      const basePrice = currentPrice || 2500
+      const volatility = basePrice * 0.02
       let points = []
       const now = new Date()
 
       if (timeline === "day") {
-        // Last 60 seconds for real-time feel
         points = Array.from({ length: 60 }, (_, i) => {
           const randomChange = (Math.random() - 0.5) * volatility
           const price = basePrice + randomChange * (i / 60)
           const time = new Date(now.getTime() - (59 - i) * 1000)
           return {
             price: Math.max(price, basePrice * 0.95),
-            time: time.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+            time: time.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
             timestamp: time,
           }
         })
@@ -54,7 +51,7 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
           date.setDate(date.getDate() - (29 - i))
           return {
             price: Math.max(price, basePrice * 0.9),
-            time: date.toLocaleDateString("en-US", { day: "numeric", month: "short" }),
+            time: date.toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
             timestamp: date,
           }
         })
@@ -66,7 +63,7 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
           date.setDate(date.getDate() - (51 - i) * 7)
           return {
             price: Math.max(price, basePrice * 0.85),
-            time: date.toLocaleDateString("en-US", { day: "numeric", month: "short" }),
+            time: date.toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
             timestamp: date,
           }
         })
@@ -76,13 +73,12 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
     }
   }, [timeline, currentPrice, data, priceHistory])
 
-  // Update with real-time price
   useEffect(() => {
     if (currentPrice && displayData.length > 0) {
       const now = new Date()
       const newPoint = {
         price: currentPrice,
-        time: now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+        time: now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
         timestamp: now,
       }
 
@@ -93,7 +89,6 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
     }
   }, [currentPrice])
 
-  // Calculate min/max
   useEffect(() => {
     if (displayData && displayData.length > 0) {
       const prices = displayData.map((d) => d.price)
@@ -109,20 +104,17 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
     return <div className="graph-loading">Loading chart...</div>
   }
 
-  // SVG dimensions
   const width = 800
   const height = 300
-  const padding = { top: 20, right: 20, bottom: 40, left: 60 }
+  const padding = { top: 20, right: 20, bottom: 40, left: 70 }
   const chartWidth = width - padding.left - padding.right
   const chartHeight = height - padding.top - padding.bottom
 
   const range = maxPrice - minPrice || 1
 
-  // Generate SVG path for the line
   const getX = (index) => padding.left + (index / (displayData.length - 1)) * chartWidth
   const getY = (price) => padding.top + chartHeight - ((price - minPrice) / range) * chartHeight
 
-  // Line path
   const linePath = displayData
     .map((point, i) => {
       const x = getX(i)
@@ -131,23 +123,19 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
     })
     .join(" ")
 
-  // Area path (for gradient fill)
   const areaPath = `${linePath} L ${getX(displayData.length - 1)} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z`
 
-  // Calculate price change
   const firstPrice = displayData[0]?.price || currentPrice
   const lastPrice = displayData[displayData.length - 1]?.price || currentPrice
   const priceChange = lastPrice - firstPrice
   const percentChange = ((priceChange / firstPrice) * 100).toFixed(2)
   const isUp = priceChange >= 0
 
-  // Generate Y-axis labels
   const yLabels = Array.from({ length: 5 }, (_, i) => {
     const value = minPrice + (range * i) / 4
     return { value, y: getY(value) }
   })
 
-  // Generate X-axis labels (show every nth label)
   const xLabelInterval = Math.ceil(displayData.length / 6)
   const xLabels = displayData.filter((_, i) => i % xLabelInterval === 0 || i === displayData.length - 1)
 
@@ -156,11 +144,10 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
       <div className="graph-header">
         <div className="graph-info">
           <span className="graph-stock">{stock}</span>
-          <span className={`graph-price ${isUp ? "up" : "down"}`}>${currentPrice?.toFixed(2)}</span>
+          <span className={`graph-price ${isUp ? "up" : "down"}`}>₹{currentPrice?.toFixed(2)}</span>
         </div>
         <div className={`graph-change ${isUp ? "positive" : "negative"}`}>
-          {isUp ? "+" : ""}
-          {priceChange.toFixed(2)} ({isUp ? "+" : ""}
+          {isUp ? "+" : ""}₹{priceChange.toFixed(2)} ({isUp ? "+" : ""}
           {percentChange}%)
         </div>
       </div>
@@ -186,7 +173,6 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
             </linearGradient>
           </defs>
 
-          {/* Horizontal grid lines */}
           {yLabels.map((label, i) => (
             <g key={i}>
               <line
@@ -199,12 +185,11 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
                 strokeWidth="1"
               />
               <text x={padding.left - 10} y={label.y + 4} textAnchor="end" fill="#6b7280" fontSize="12">
-                ${label.value.toFixed(0)}
+                ₹{label.value.toFixed(0)}
               </text>
             </g>
           ))}
 
-          {/* X-axis labels */}
           {xLabels.map((point, i) => {
             const index = displayData.indexOf(point)
             return (
@@ -214,10 +199,8 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
             )
           })}
 
-          {/* Area fill */}
           <path d={areaPath} fill={`url(#gradient-${stock})`} />
 
-          {/* Line */}
           <path
             d={linePath}
             fill="none"
@@ -227,7 +210,6 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
             strokeLinejoin="round"
           />
 
-          {/* Data points on hover */}
           {displayData.map((point, i) => (
             <circle
               key={i}
@@ -244,7 +226,6 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
             />
           ))}
 
-          {/* Invisible hover areas for each point */}
           {displayData.map((point, i) => (
             <rect
               key={`hover-${i}`}
@@ -258,7 +239,6 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
             />
           ))}
 
-          {/* Tooltip */}
           {hoveredPoint !== null && displayData[hoveredPoint] && (
             <g>
               <rect
@@ -279,12 +259,11 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
                 fontSize="12"
                 fontWeight="600"
               >
-                ${displayData[hoveredPoint].price.toFixed(2)}
+                ₹{displayData[hoveredPoint].price.toFixed(2)}
               </text>
             </g>
           )}
 
-          {/* Current price indicator */}
           <circle
             cx={getX(displayData.length - 1)}
             cy={getY(lastPrice)}
@@ -302,20 +281,20 @@ const StockGraph = ({ stock, data, currentPrice, priceHistory }) => {
         <div className="stat">
           <span className="stat-label">Day Range</span>
           <span className="stat-value">
-            ${minPrice.toFixed(2)} - ${maxPrice.toFixed(2)}
+            ₹{minPrice.toFixed(2)} - ₹{maxPrice.toFixed(2)}
           </span>
         </div>
         <div className="stat">
           <span className="stat-label">Open</span>
-          <span className="stat-value">${firstPrice.toFixed(2)}</span>
+          <span className="stat-value">₹{firstPrice.toFixed(2)}</span>
         </div>
         <div className="stat">
           <span className="stat-label">High</span>
-          <span className="stat-value green">${maxPrice.toFixed(2)}</span>
+          <span className="stat-value green">₹{maxPrice.toFixed(2)}</span>
         </div>
         <div className="stat">
           <span className="stat-label">Low</span>
-          <span className="stat-value red">${minPrice.toFixed(2)}</span>
+          <span className="stat-value red">₹{minPrice.toFixed(2)}</span>
         </div>
       </div>
     </div>
