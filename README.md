@@ -162,37 +162,6 @@ Your browser should automatically open to `http://localhost:3000`
 
 Both tabs will show different portfolios updating in real-time independently.
 
-## Project Structure
-
-\`\`\`
-stock-broker-dashboard/
-│
-├── backend/
-│   ├── server.js           # Express server with Socket.IO and MongoDB
-│   ├── package.json        # Backend dependencies
-│   └── .env               # Environment variables (create this)
-│
-├── frontend/
-│   ├── public/            # Static files
-│   ├── src/
-│   │   ├── components/    # Reusable components
-│   │   │   ├── FormInput.jsx
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── PrivateRoute.jsx
-│   │   │   ├── StockCard.jsx
-│   │   │   └── StockGraph.jsx
-│   │   ├── pages/         # Page components
-│   │   │   ├── Home.jsx
-│   │   │   ├── SignIn.jsx
-│   │   │   ├── SignUp.jsx
-│   │   │   └── Dashboard.jsx
-│   │   ├── App.js         # Main app component
-│   │   ├── index.js       # React entry point
-│   │   └── index.css      # Global styles
-│   └── package.json       # Frontend dependencies
-│
-├── README.md              # This file
-\`\`\`
 
 ## API Endpoints
 
