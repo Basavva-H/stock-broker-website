@@ -85,6 +85,8 @@ const userSocketsPerUserId = new Map()
 const stockPrices = {}
 const stockData = {}
 
+let stocksInitialized = false
+
 const initializeStocks = async () => {
   for (const stock of SUPPORTED_STOCKS) {
     // Use Indian stock price range (in INR)
@@ -116,6 +118,7 @@ const initializeStocks = async () => {
       { upsert: true, new: true },
     )
   }
+  stocksInitialized = true
   console.log("Stocks initialized in database")
 }
 
@@ -419,18 +422,32 @@ io.on("connection", (socket) => {
 })
 
 setInterval(async () => {
+  // Skip if stocks not initialized yet
+  if (!stocksInitialized) {
+    console.log("Waiting for stocks to initialize...")
+    return
+  }
+
   const timestamp = new Date()
 
   for (const stock of SUPPORTED_STOCKS) {
     const symbol = stock.symbol
     const previousPrice = stockPrices[symbol]
+
+    if (previousPrice === undefined) {
+      continue
+    }
+
     const change = (Math.random() - 0.5) * 50 // INR fluctuation
     const newPrice = Math.max(Number.parseFloat((previousPrice + change).toFixed(2)), 100)
 
     stockPrices[symbol] = newPrice
 
-    // Update stock data
     const data = stockData[symbol]
+    if (!data) {
+      continue
+    }
+
     data.price = newPrice
     data.change = Number.parseFloat((newPrice - data.openPrice).toFixed(2))
     data.changePercent = Number.parseFloat(((data.change / data.openPrice) * 100).toFixed(2))
