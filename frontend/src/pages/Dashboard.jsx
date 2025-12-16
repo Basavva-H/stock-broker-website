@@ -17,6 +17,7 @@ console.log("WS_URL =", WS_URL, typeof WS_URL);
 const Dashboard = ({ onLogout }) => {
   const [user, setUser] = useState(null)
   const [stocks, setStocks] = useState([])
+  const [stocksData, setStocksData] = useState({})
   const [prices, setPrices] = useState({})
   const [priceHistory, setPriceHistory] = useState({})
   const [subscribed, setSubscribed] = useState([])
@@ -32,7 +33,8 @@ const Dashboard = ({ onLogout }) => {
   useEffect(() => {
     if (subscribed.length > 0 && Object.keys(prices).length > 0) {
       const total = subscribed.reduce((sum, stock) => {
-        return sum + (prices[stock] || 0)
+        const price = typeof prices[stock] === "object" ? prices[stock]?.currentPrice : prices[stock]
+        return sum + (price || 0)
       }, 0)
       setPortfolioValue(total)
     } else {
@@ -46,7 +48,7 @@ const Dashboard = ({ onLogout }) => {
       try {
         setUser(JSON.parse(userData))
       } catch (error) {
-        console.error("[v0] Error parsing user data:", error)
+        console.error("Error parsing user data:", error)
         sessionStorage.removeItem("user")
       }
     }
@@ -54,14 +56,31 @@ const Dashboard = ({ onLogout }) => {
     const fetchInitialData = async () => {
       try {
         const stocksRes = await axios.get(`${API_URL}/api/stocks/supported`)
-        setStocks(stocksRes.data.stocks)
+        const stocksList = stocksRes.data.stocks
+        const parsedStocks = stocksList.map((s) => (typeof s === "object" ? s.symbol : s))
+        setStocks(parsedStocks)
+
+        if (stocksRes.data.stocksData) {
+          const dataMap = {}
+          stocksRes.data.stocksData.forEach((s) => {
+            if (typeof s === "object") {
+              dataMap[s.symbol] = s
+            }
+          })
+          setStocksData(dataMap)
+        }
 
         const pricesRes = await axios.get(`${API_URL}/api/stocks/prices`)
-        setPrices(pricesRes.data.prices)
+        const pricesData = {}
+        Object.keys(pricesRes.data.prices).forEach((symbol) => {
+          const p = pricesRes.data.prices[symbol]
+          pricesData[symbol] = typeof p === "object" ? p.currentPrice : p
+        })
+        setPrices(pricesData)
 
         const history = {}
-        stocksRes.data.stocks.forEach((stock) => {
-          history[stock] = [{ time: new Date().toLocaleTimeString(), price: pricesRes.data.prices[stock] }]
+        parsedStocks.forEach((stock) => {
+          history[stock] = [{ time: new Date().toLocaleTimeString(), price: pricesData[stock] || 0 }]
         })
         setPriceHistory(history)
 
@@ -83,28 +102,21 @@ const Dashboard = ({ onLogout }) => {
 
     fetchInitialData()
 
-   const newSocket = io(WS_URL, {
-  path: "/socket.io",
-  transports: ["websocket"], // 🚫 disables polling
-  withCredentials: true,
-  timeout: 20000,
-})
-
+    const newSocket = io(WS_URL, {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
+    })
 
     setSocket(newSocket)
 
     newSocket.on("connect", () => {
-      console.log("Socket connected:", newSocket.id)
       setConnectionStatus("Connected")
-if (token && token !== "undefined") {
-  newSocket.emit("authenticate", token)
-} else {
-  console.warn("No token found, skipping socket authentication")
-}
+      newSocket.emit("authenticate", token)
     })
 
     newSocket.on("authenticated", (data) => {
-      console.log("Socket authenticated successfully:", data)
       setConnectionStatus("Connected")
     })
 
@@ -114,20 +126,24 @@ if (token && token !== "undefined") {
     })
 
     newSocket.on("price-update", (data) => {
-      console.log("Price update received at", new Date(data.timestamp).toLocaleTimeString())
-      setPrices(data.prices)
+      const updatedPrices = {}
+      Object.keys(data.prices).forEach((symbol) => {
+        const p = data.prices[symbol]
+        updatedPrices[symbol] = typeof p === "object" ? p.currentPrice : p
+      })
+      setPrices(updatedPrices)
 
       setPriceHistory((prev) => {
         const updated = { ...prev }
-        Object.keys(data.prices).forEach((stock) => {
+        Object.keys(updatedPrices).forEach((stock) => {
           if (!updated[stock]) {
             updated[stock] = []
           }
           updated[stock].push({
             time: new Date().toLocaleTimeString(),
-            price: data.prices[stock],
+            price: updatedPrices[stock],
           })
-          if (updated[stock].length > 30) {
+          if (updated[stock].length > 60) {
             updated[stock].shift()
           }
         })
@@ -136,7 +152,6 @@ if (token && token !== "undefined") {
     })
 
     newSocket.on("disconnect", () => {
-      console.log("Socket disconnected")
       setConnectionStatus("Disconnected")
     })
 
@@ -146,27 +161,25 @@ if (token && token !== "undefined") {
     })
 
     return () => {
-      console.log("Cleaning up socket connection")
       newSocket.disconnect()
     }
   }, [token])
 
+  const getPrice = (stock) => {
+    const price = prices[stock]
+    if (typeof price === "object") {
+      return price?.currentPrice || 0
+    }
+    return price || 0
+  }
+
   const handleSubscribe = async (stockSymbol) => {
     try {
-      console.log("TOKEN USED FOR SUBSCRIBE:", token);
-
       await axios.post(
-  `${API_URL}/api/stocks/subscribe`,
-  { stockSymbol },
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    withCredentials: true,
-  }
-)
-
+        `${API_URL}/api/stocks/subscribe`,
+        { stockSymbol },
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
       setSubscribed([...subscribed, stockSymbol])
       setSelectedStock(stockSymbol)
       socket?.emit("subscribe-stock", stockSymbol)
@@ -182,9 +195,10 @@ if (token && token !== "undefined") {
         { stockSymbol },
         { headers: { Authorization: `Bearer ${token}` } },
       )
-      setSubscribed(subscribed.filter((s) => s !== stockSymbol))
+      const newSubscribed = subscribed.filter((s) => s !== stockSymbol)
+      setSubscribed(newSubscribed)
       if (selectedStock === stockSymbol) {
-        setSelectedStock(subscribed.length > 1 ? subscribed[0] : null)
+        setSelectedStock(newSubscribed.length > 0 ? newSubscribed[0] : null)
       }
     } catch (error) {
       alert("Failed to unsubscribe from stock")
@@ -222,7 +236,7 @@ if (token && token !== "undefined") {
         <div className="dashboard-header">
           <h1 className="dashboard-title">Your Stock Portfolio</h1>
           <p className="dashboard-subtitle">Subscribe to stocks and track real-time prices</p>
-          
+          <p className="connection-status">Status: {connectionStatus}</p>
           {subscribed.length > 0 && (
             <div className="portfolio-value-container">
               <div className="portfolio-value-box">
@@ -244,7 +258,7 @@ if (token && token !== "undefined") {
                       <div className="mini-card-content">
                         <div className="mini-card-header" onClick={() => setSelectedStock(stock)}>
                           <span className="mini-stock-symbol">{stock}</span>
-                          <span className="mini-stock-price">₹{prices[stock]?.toFixed(2) || "0.00"}</span>
+                          <span className="mini-stock-price">₹{getPrice(stock).toFixed(2)}</span>
                         </div>
                         <button
                           className="mini-unsubscribe-btn"
@@ -261,11 +275,12 @@ if (token && token !== "undefined") {
 
               {selectedStock && priceHistory[selectedStock] && (
                 <section className="graph-section">
-                  <h2 className="section-label">Stock Chart</h2>
+                  <h2 className="section-label">Stock Chart - {selectedStock}</h2>
                   <StockGraph
                     stock={selectedStock}
                     data={priceHistory[selectedStock]}
-                    currentPrice={prices[selectedStock]}
+                    currentPrice={getPrice(selectedStock)}
+                    stockInfo={stocksData[selectedStock]}
                   />
                 </section>
               )}
@@ -283,10 +298,11 @@ if (token && token !== "undefined") {
                       <StockCard
                         key={stock}
                         stock={stock}
-                        price={prices[stock] || 0}
+                        price={getPrice(stock)}
                         onSubscribe={handleSubscribe}
                         onUnsubscribe={handleUnsubscribe}
                         isSubscribed={false}
+                        stockInfo={stocksData[stock]}
                       />
                     ))}
                   </div>
@@ -308,10 +324,11 @@ if (token && token !== "undefined") {
                 <StockCard
                   key={stock}
                   stock={stock}
-                  price={prices[stock] || 0}
+                  price={getPrice(stock)}
                   onSubscribe={handleSubscribe}
                   onUnsubscribe={handleUnsubscribe}
                   isSubscribed={false}
+                  stockInfo={stocksData[stock]}
                 />
               ))}
             </div>
