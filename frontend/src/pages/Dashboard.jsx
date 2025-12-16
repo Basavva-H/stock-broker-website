@@ -236,7 +236,6 @@ const Dashboard = ({ onLogout }) => {
         <div className="dashboard-header">
           <h1 className="dashboard-title">Your Stock Portfolio</h1>
           <p className="dashboard-subtitle">Subscribe to stocks and track real-time prices</p>
-          <p className="connection-status">Status: {connectionStatus}</p>
           {subscribed.length > 0 && (
             <div className="portfolio-value-container">
               <div className="portfolio-value-box">
